@@ -29,27 +29,24 @@ const MOCK_USERS: User[] = [
 ];
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Data State
-  const [equipment, setEquipment] = useState<Equipment[]>(() => {
-    const saved = localStorage.getItem('tms_equipment');
-    return saved ? JSON.parse(saved) : INITIAL_EQUIPMENT;
-  });
+  const readJSON = <T,>(key: string, fallback: T): T => {
+    try {
+      const saved = localStorage.getItem(key);
+      if (!saved) return fallback;
+      return JSON.parse(saved) as T;
+    } catch {
+      localStorage.removeItem(key);
+      return fallback;
+    }
+  };
 
-  const [people, setPeople] = useState<Person[]>(() => {
-    const saved = localStorage.getItem('tms_people');
-    return saved ? JSON.parse(saved) : INITIAL_PEOPLE;
-  });
+  const [equipment, setEquipment] = useState<Equipment[]>(() => readJSON('tms_equipment', INITIAL_EQUIPMENT));
 
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('tms_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
+  const [people, setPeople] = useState<Person[]>(() => readJSON('tms_people', INITIAL_PEOPLE));
 
-  // Auth State
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('tms_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [orders, setOrders] = useState<Order[]>(() => readJSON('tms_orders', INITIAL_ORDERS));
+
+  const [currentUser, setCurrentUser] = useState<User | null>(() => readJSON<User | null>('tms_user', null));
 
   // Persist Data
   useEffect(() => { localStorage.setItem('tms_equipment', JSON.stringify(equipment)); }, [equipment]);
